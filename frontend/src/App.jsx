@@ -1,68 +1,79 @@
-// App.jsx
 import React, { useState } from 'react';
 import WeatherCard from './components/WeatherCard';
 import ChatAssistant from './components/ChatAssistant';
-import { Input } from './components/ui/Input';
-import { Button } from './components/ui/Button';
+import axios from 'axios';
 
 const App = () => {
   const [city, setCity] = useState('');
-  const [profession, setProfession] = useState('general');
+  const [profession, setProfession] = useState('');
   const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
 
-  const handleFetchWeather = async () => {
+  const fetchWeather = async () => {
     if (!city) return;
     setLoading(true);
-    setError(null);
+    setError('');
     try {
-      const res = await fetch('https://your-render-backend.onrender.com/weather', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ city, profession }),
+      const response = await axios.post('https://your-backend-url.onrender.com/weather', {
+        city,
+        profession
       });
-
-      const result = await res.json();
-      if (result.success) {
-        setWeatherData(result);
-      } else {
-        setError(result.error || 'Something went wrong');
-      }
+      setWeatherData(response.data);
     } catch (err) {
-      setError('Failed to fetch weather');
+      setError('Failed to fetch weather data.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white p-6 font-sans">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <h1 className="text-4xl font-bold text-center">Weather Dashboard</h1>
+    <div className="min-h-screen bg-gray-900 text-white px-4 py-6">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6 text-center">🌤️ Weather Forecast Dashboard</h1>
 
-        <div className="grid md:grid-cols-3 gap-4 items-center">
-          <Input placeholder="Enter city..." value={city} onChange={(e) => setCity(e.target.value)} />
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <input
+            type="text"
+            placeholder="Enter city"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="flex-1 p-3 bg-gray-800 rounded-xl outline-none"
+          />
           <select
-            className="bg-gray-800 p-2 rounded-md text-white border border-gray-700"
             value={profession}
             onChange={(e) => setProfession(e.target.value)}
+            className="flex-1 p-3 bg-gray-800 rounded-xl outline-none"
           >
-            <option value="general">General</option>
+            <option value="">Select profession</option>
             <option value="farmer">Farmer</option>
+            <option value="energy Planner">Energy Grid Planner</option>
             <option value="event Planner">Event Planner</option>
             <option value="construction">Construction Worker</option>
-            <option value="energy Planner">Energy Grid Planner</option>
             <option value="delivery">Delivery Driver</option>
+            <option value="others">Others</option>
           </select>
-          <Button onClick={handleFetchWeather} disabled={loading}>
-            {loading ? 'Loading...' : 'Get Weather'}
-          </Button>
+          <button
+            onClick={fetchWeather}
+            className="bg-pink-600 hover:bg-pink-700 px-6 py-3 rounded-xl"
+          >
+            Get Weather
+          </button>
         </div>
 
-        {error && <div className="text-red-400">{error}</div>}
-        {weatherData && <WeatherCard data={weatherData} />}
-        {weatherData && <ChatAssistant city={city} profession={profession} />}
+        {loading && <div className="text-center text-pink-400">Loading...</div>}
+        {error && <div className="text-red-500 text-center">{error}</div>}
+
+        {weatherData && weatherData.success && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <WeatherCard data={weatherData} />
+            </div>
+            <div className="lg:col-span-1">
+              <ChatAssistant city={city} profession={profession} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
