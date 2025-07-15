@@ -1,5 +1,5 @@
 export default {
-  content: ["./index.html", "./App.jsx"],
+  content: [".js", ".jsx", ".html"],
   theme: {
     extend: {},
   },
