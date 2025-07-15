@@ -13,7 +13,7 @@ const App = () => {
   const fetchWeather = async () => {
     setLoading(true);
     try {
-      const response = await axios.post("https://smart-weather-dash.onrender.com/weather", { city, profession });
+      const response = await axios.post("https://smart-weather-dash.onrender.com", { city, profession });
       setWeather(response.data);
     } catch (err) {
       alert("Error fetching weather");
