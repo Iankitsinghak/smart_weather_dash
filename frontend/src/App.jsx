@@ -1,79 +1,111 @@
-import React, { useState } from 'react';
-import WeatherCard from './components/WeatherCard';
-import ChatAssistant from './components/ChatAssistant';
-import axios from 'axios';
+#### 1. `App.jsx`
+import React, { useState } from "react";
+import axios from "axios";
 
 const App = () => {
-  const [city, setCity] = useState('');
-  const [profession, setProfession] = useState('');
-  const [weatherData, setWeatherData] = useState(null);
+  const [city, setCity] = useState("");
+  const [profession, setProfession] = useState("general");
+  const [weather, setWeather] = useState(null);
+  const [chatInput, setChatInput] = useState("");
+  const [chatResponse, setChatResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const fetchWeather = async () => {
-    if (!city) return;
     setLoading(true);
-    setError('');
     try {
-      const response = await axios.post('https://your-backend-url.onrender.com/weather', {
-        city,
-        profession
-      });
-      setWeatherData(response.data);
+      const response = await axios.post("https://your-backend-url/weather", { city, profession });
+      setWeather(response.data);
     } catch (err) {
-      setError('Failed to fetch weather data.');
+      alert("Error fetching weather");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-900 text-white px-4 py-6">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">🌤️ Weather Forecast Dashboard</h1>
+  const sendMessage = async () => {
+    try {
+      const response = await axios.post("https://your-backend-url/chat", {
+        city,
+        profession,
+        message: chatInput,
+      });
+      setChatResponse(response.data.response);
+    } catch (err) {
+      alert("Chat error");
+    }
+  };
 
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+  return (
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <h1 className="text-4xl font-bold text-center">🌤️ Weather AI Dashboard</h1>
+
+        <div className="bg-gray-800 p-4 rounded-xl shadow-xl space-y-4">
           <input
             type="text"
-            placeholder="Enter city"
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            className="flex-1 p-3 bg-gray-800 rounded-xl outline-none"
+            placeholder="Enter city"
+            className="w-full p-3 rounded-lg bg-gray-700 text-white"
           />
+
           <select
             value={profession}
             onChange={(e) => setProfession(e.target.value)}
-            className="flex-1 p-3 bg-gray-800 rounded-xl outline-none"
+            className="w-full p-3 rounded-lg bg-gray-700 text-white"
           >
-            <option value="">Select profession</option>
+            <option value="general">General</option>
             <option value="farmer">Farmer</option>
-            <option value="energy Planner">Energy Grid Planner</option>
-            <option value="event Planner">Event Planner</option>
-            <option value="construction">Construction Worker</option>
-            <option value="delivery">Delivery Driver</option>
-            <option value="others">Others</option>
+            <option value="pilot">Pilot</option>
+            <option value="event_planner">Event Planner</option>
+            <option value="teacher">Teacher</option>
           </select>
+
           <button
             onClick={fetchWeather}
-            className="bg-pink-600 hover:bg-pink-700 px-6 py-3 rounded-xl"
+            className="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded-lg font-bold"
           >
-            Get Weather
+            {loading ? "Loading..." : "Get Weather"}
           </button>
         </div>
 
-        {loading && <div className="text-center text-pink-400">Loading...</div>}
-        {error && <div className="text-red-500 text-center">{error}</div>}
-
-        {weatherData && weatherData.success && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <WeatherCard data={weatherData} />
-            </div>
-            <div className="lg:col-span-1">
-              <ChatAssistant city={city} profession={profession} />
+        {weather && (
+          <div className="bg-gray-800 p-4 rounded-xl shadow-xl">
+            <h2 className="text-xl font-bold mb-2">Weather in {weather.city}, {weather.country}</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <p>🌡️ Temp: {weather.current_temp}°C</p>
+              <p>Feels like: {weather.feels_like}°C</p>
+              <p>Humidity: {weather.humidity}%</p>
+              <p>Pressure: {weather.pressure} hPa</p>
+              <p>Wind: {weather.wind_Gust_Speed} m/s</p>
+              <p>Condition: {weather.description}</p>
             </div>
           </div>
         )}
+
+        <div className="bg-gray-800 p-4 rounded-xl shadow-xl space-y-4">
+          <textarea
+            rows="3"
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            placeholder="Ask your assistant..."
+            className="w-full p-3 rounded-lg bg-gray-700 text-white"
+          ></textarea>
+
+          <button
+            onClick={sendMessage}
+            className="w-full bg-green-600 hover:bg-green-700 p-3 rounded-lg font-bold"
+          >
+            Ask AI
+          </button>
+
+          {chatResponse && (
+            <div className="bg-gray-700 p-3 rounded-lg">
+              <strong>Assistant:</strong>
+              <p>{chatResponse}</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
