@@ -1,4 +1,3 @@
-#### 1. `App.jsx`
 import React, { useState } from "react";
 import axios from "axios";
 
@@ -10,28 +9,32 @@ const App = () => {
   const [chatResponse, setChatResponse] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const BACKEND_URL = "https://smart-weather-dash.onrender.com";
+
   const fetchWeather = async () => {
+    if (!city) return alert("Please enter a city");
     setLoading(true);
     try {
-      const response = await axios.post("https://smart-weather-dash.onrender.com", { city, profession });
-      setWeather(response.data);
+      const res = await axios.post(`${BACKEND_URL}/weather`, { city, profession });
+      setWeather(res.data);
     } catch (err) {
-      alert("Error fetching weather");
+      alert("Failed to fetch weather. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const sendMessage = async () => {
+    if (!chatInput.trim()) return;
     try {
-      const response = await axios.post("https://smart-weather-dash.onrender.com/chat", {
+      const res = await axios.post(`${BACKEND_URL}/chat`, {
         city,
         profession,
         message: chatInput,
       });
-      setChatResponse(response.data.response);
+      setChatResponse(res.data.response);
     } catch (err) {
-      alert("Chat error");
+      alert("Assistant failed to respond.");
     }
   };
 
