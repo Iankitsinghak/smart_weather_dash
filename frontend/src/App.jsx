@@ -1,48 +1,71 @@
+// App.jsx
 import React, { useState } from 'react';
-import axios from 'axios';
 import WeatherCard from './components/WeatherCard';
 import ChatAssistant from './components/ChatAssistant';
-import { Input } from './components/ui/input';
-import { Button } from './components/ui/button';
+import { Input } from './components/ui/Input';
+import { Button } from './components/ui/Button';
 
-export default function App() {
+const App = () => {
   const [city, setCity] = useState('');
   const [profession, setProfession] = useState('general');
-  const [weather, setWeather] = useState(null);
+  const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const fetchWeather = async () => {
+  const handleFetchWeather = async () => {
+    if (!city) return;
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      const res = await axios.post('https://your-render-backend.onrender.com/weather', {
-        city,
-        profession
+      const res = await fetch('https://your-render-backend.onrender.com/weather', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city, profession }),
       });
-      setWeather(res.data);
+
+      const result = await res.json();
+      if (result.success) {
+        setWeatherData(result);
+      } else {
+        setError(result.error || 'Something went wrong');
+      }
     } catch (err) {
-      alert("Failed to fetch weather data.");
+      setError('Failed to fetch weather');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white p-6">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <h1 className="text-4xl font-bold text-center">🌦️ Weather Dashboard</h1>
+    <div className="min-h-screen bg-[#121212] text-white p-6 font-sans">
+      <div className="max-w-5xl mx-auto space-y-6">
+        <h1 className="text-4xl font-bold text-center">Weather Dashboard</h1>
 
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Input placeholder="Enter city" value={city} onChange={e => setCity(e.target.value)} className="flex-1" />
-          <Input placeholder="Profession (e.g. farmer, pilot)" value={profession} onChange={e => setProfession(e.target.value)} className="flex-1" />
-          <Button onClick={fetchWeather} disabled={loading}>
-            {loading ? "Loading..." : "Get Weather"}
+        <div className="grid md:grid-cols-3 gap-4 items-center">
+          <Input placeholder="Enter city..." value={city} onChange={(e) => setCity(e.target.value)} />
+          <select
+            className="bg-gray-800 p-2 rounded-md text-white border border-gray-700"
+            value={profession}
+            onChange={(e) => setProfession(e.target.value)}
+          >
+            <option value="general">General</option>
+            <option value="farmer">Farmer</option>
+            <option value="event Planner">Event Planner</option>
+            <option value="construction">Construction Worker</option>
+            <option value="energy Planner">Energy Grid Planner</option>
+            <option value="delivery">Delivery Driver</option>
+          </select>
+          <Button onClick={handleFetchWeather} disabled={loading}>
+            {loading ? 'Loading...' : 'Get Weather'}
           </Button>
         </div>
 
-        {weather && <WeatherCard data={weather} />}
-
-        {weather && <ChatAssistant city={city} profession={profession} />}
+        {error && <div className="text-red-400">{error}</div>}
+        {weatherData && <WeatherCard data={weatherData} />}
+        {weatherData && <ChatAssistant city={city} profession={profession} />}
       </div>
     </div>
   );
-}
+};
+
+export default App;
