@@ -1,18 +1,20 @@
-# backend/app.py
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+### app.py
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from weather import get_current_weather, get_hourly_forecast
-from chat import get_profession_advice
-import os
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from dotenv import load_dotenv
+import google.generativeai as genai
+import os
+from chat import get_professional_response
+from weather import fetch_weather_data
 
 load_dotenv()
 
 app = FastAPI()
 
-# Allow frontend origin
+# CORS for frontend on Vercel
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,26 +23,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# In-memory storage
+scheduler = AsyncIOScheduler()
+scheduler.start()
+
 class CityRequest(BaseModel):
     city: str
+    profession: str = "general"
 
 class ChatRequest(BaseModel):
     city: str
+    profession: str
     message: str
 
 @app.post("/weather")
-async def fetch_weather(request: CityRequest):
+async def get_weather(request: CityRequest):
     try:
-        current = get_current_weather(request.city)
-        forecast = get_hourly_forecast(request.city)
-        return JSONResponse(content={**current, **forecast})
+        data = fetch_weather_data(request.city)
+        return JSONResponse(content={"success": True, **data})
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
 
 @app.post("/chat")
-async def chat_ai(req: ChatRequest):
+async def chat_with_ai(request: ChatRequest):
     try:
-        advice = get_profession_advice(req.city, req.message)
-        return {"response": advice}
+        reply = get_professional_response(request.message, request.city, request.profession)
+        return JSONResponse(content={"success": True, "response": reply})
     except Exception as e:
-        return {"response": f"Error: {str(e)}"}
+        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
