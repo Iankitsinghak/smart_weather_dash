@@ -8,7 +8,7 @@ const App = () => {
   const [city, setCity] = useState('Kolkata');
 
   const fetchWeather = async () => {
-    const res = await fetch(`https://your-render-backend.onrender.com/weather?city=${city}`);
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/weather?city=${city}`);
     const data = await res.json();
     setWeatherData(data);
   };
