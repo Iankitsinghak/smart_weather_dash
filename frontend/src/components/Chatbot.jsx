@@ -4,37 +4,31 @@ const Chatbot = ({ city }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
 
-const askBot = async () => {
-  if (!input.trim()) return;
+  const askBot = async () => {
+    if (!input.trim()) return;
 
-  const userMsg = { sender: 'user', text: input };
-  setMessages((prev) => [...prev, userMsg]);
+    const userMsg = { sender: 'user', text: input };
+    setMessages((prev) => [...prev, userMsg]);
 
-  try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/chatbot`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ city, query: input })
-    });
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/chatbot`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ city, query: input }),
+      });
 
-    const data = await res.json();
-    const botMsg = { sender: 'bot', text: data.response };
-    setMessages((prev) => [...prev, botMsg]);
-    setInput('');
-  } catch (err) {
-    console.error("Chatbot error:", err);
-    const botMsg = { sender: 'bot', text: "Error: couldn't connect to the AI brain 😢" };
-    setMessages((prev) => [...prev, botMsg]);
-  }
-};
+      const data = await res.json();
+      const botMsg = { sender: 'bot', text: data.response };
+      setMessages((prev) => [...prev, botMsg]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: 'bot', text: 'Sorry, error reaching the AI 😢' },
+      ]);
+    }
 
-
-
-    const data = await res.json();
-    const botMsg = { sender: 'bot', text: data.response };
-    setMessages((prev) => [...prev, botMsg]);
     setInput('');
   };
 
