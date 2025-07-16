@@ -5,32 +5,33 @@ const Chatbot = ({ city }) => {
   const [input, setInput] = useState('');
 
   const askBot = async () => {
-    if (!input.trim()) return;
+  if (!input.trim()) return;
 
-    const userMsg = { sender: 'user', text: input };
-    setMessages((prev) => [...prev, userMsg]);
+  const userMsg = { sender: 'user', text: input };
+  setMessages((prev) => [...prev, userMsg]);
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/chatbot`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ city, query: input }),
-      });
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/chatbot`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ city, query: input }),
+    });
 
-      const data = await res.json();
-      const botMsg = { sender: 'bot', text: data.response };
-      setMessages((prev) => [...prev, botMsg]);
-    } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        { sender: 'bot', text: 'Sorry, error reaching the AI 😢' },
-      ]);
-    }
+    const data = await res.json();
 
-    setInput('');
-  };
+    const botMsg = { sender: 'bot', text: data?.response || '🤖 No reply received.' };
+    setMessages((prev) => [...prev, botMsg]);
+  } catch (err) {
+    setMessages((prev) => [
+      ...prev,
+      { sender: 'bot', text: 'Sorry, error reaching the AI 😢' },
+    ]);
+  }
+
+  setInput('');
+};
 
   return (
     <div className="fixed right-6 bottom-6 bg-gray-800 p-4 rounded shadow-lg w-80 max-h-[60vh] overflow-y-auto">
