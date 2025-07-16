@@ -10,11 +10,14 @@ const Chatbot = ({ city }) => {
     const userMsg = { sender: 'user', text: input };
     setMessages((prev) => [...prev, userMsg]);
 
-    const res = await fetch('https://your-render-backend.onrender.com/chatbot', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ city, query: input }),
-    });
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/chatbot`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ city, query })
+});
+
 
     const data = await res.json();
     const botMsg = { sender: 'bot', text: data.response };
