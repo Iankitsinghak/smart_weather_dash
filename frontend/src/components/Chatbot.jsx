@@ -11,7 +11,7 @@ const Chatbot = ({ city }) => {
   setMessages((prev) => [...prev, userMsg]);
 
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/chatbot`, {
+    const res = await fetch(`${import.meta.env.GEMINI_API_KEY}/chatbot`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
